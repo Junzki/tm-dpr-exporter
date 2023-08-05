@@ -1,0 +1,55 @@
+---
+
+database_url: '<SQLAlchemy Database URL>'
+
+
+fetch:
+- district: 88
+  periods:
+    - year: 2023
+      month: 6
+    - year: 2022
+      month: 6
+    - year: 2021
+      month: 6
+    - year: 2020
+      month: 6
+    - year: 2019
+      month: 6
+    - year: 2018
+      month: 6
+    - year: 2017
+      month: 6
+
+- district: 85
+  periods:
+    - year: 2023
+      month: 6
+    - year: 2022
+      month: 6
+    - year: 2021
+      month: 6
+    - year: 2020
+      month: 6
+    - year: 2019
+      month: 6
+    - year: 2018
+      month: 6
+    - year: 2017
+      month: 6
+    - year: 2016
+      month: 6
+    - year: 2015
+      month: 6
+    - year: 2014
+      month: 6
+    - year: 2013
+      month: 6
+    - year: 2012
+      month: 6
+    - year: 2011
+      month: 6
+    - year: 2010
+      month: 6
+    - year: 2009
+      month: 6
