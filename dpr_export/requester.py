@@ -1,7 +1,10 @@
 # -*- coding:utf-8 -*-
+from __future__ import annotations
+
 import typing as ty
 import datetime
 import requests
+from bs4 import BeautifulSoup
 from .constants import TOASTMASTER_YEAR_LEAP, DEFAULT_CONTENT_TYPE
 
 
@@ -9,6 +12,7 @@ class Requester(object):
 
     BASE_URL = 'https://dashboards.toastmasters.org/%(tm_year)s/export.aspx' \
                '?type=CSV&report=districtperformance~%(district)s~%(to_date)s~~2000-%(current_year)s'
+    FIND_CLUBS_BASE_URL = 'https://www.toastmasters.org/Find-a-Club/%(club_id)s'
 
     def __init__(self) -> None:
         self.session = requests.Session()
@@ -72,3 +76,21 @@ class Requester(object):
 
         data = data.decode(encoding=encoding)
         return data
+
+    def fetch_club_detail(self, club_id: str,
+                          extractor: "BaseExtractor" | None = None) -> ty.Dict[str, str] | ty.AnyStr:
+        club_id = club_id.upper()
+        if club_id.startswith('CB-'):
+            club_id = club_id[3:]
+
+        url = self.FIND_CLUBS_BASE_URL % dict(club_id=club_id)
+        res = self.session.get(url=url)
+        res.raise_for_status()
+
+        content = res.content
+        if extractor:
+            result = extractor.extract(html=content)
+        else:
+            return content
+
+        return result

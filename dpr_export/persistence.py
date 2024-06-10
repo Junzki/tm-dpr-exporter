@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+from __future__ import annotations
+
 import typing as ty
 import io
 import datetime
