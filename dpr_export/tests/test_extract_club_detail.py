@@ -29,3 +29,24 @@ class TestExtractClubDetail(unittest.TestCase):
 
         self.assertIsInstance(result, dict)
         self.assertTrue(result)
+
+    def test_extract_club_location(self):
+        from dpr_export.extractors.club_detail import ClubDetailExtractor
+
+        extractor = ClubDetailExtractor()
+        result = extractor.extract_location_wgs84(self.soap)
+
+        lat, lon = result
+
+        self.assertEqual(39.7631, lat)
+        self.assertEqual(116.21457, lon)
+
+    def test_extract_club_district_division_area(self):
+        from dpr_export.extractors.club_detail import ClubDetailExtractor
+
+        extractor = ClubDetailExtractor()
+        district, division, area = extractor.extract_club_district_area(self.soap)
+
+        self.assertEqual('88', district)
+        self.assertEqual('D', division)
+        self.assertEqual('4', area)

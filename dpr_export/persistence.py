@@ -84,13 +84,13 @@ def unique_key(df: pd.DataFrame, year: int, month: int) -> pd.DataFrame:
 def create_upsert_method(meta: sa.MetaData, extra_update_fields: ty.Optional[ty.Dict[str, str]],
                          constraint: str):
     """
-    Create upsert method that satisfied the pandas's to_sql API.
+    Create upsert method that satisfied the pandas' to_sql API.
 
     https://blog.alexparunov.com/upserting-update-and-insert-with-pandas
     """
 
     def method(table, conn, keys, data_iter):
-        # select table that data is being inserted to (from pandas's context)
+        # select table that data is being inserted to (from pandas' context)
         sql_table = sa.Table(table.name, meta, autoload_with=conn)
 
         # list of dictionaries {col_name: value} of data to insert

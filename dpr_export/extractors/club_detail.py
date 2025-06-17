@@ -5,6 +5,7 @@ import typing as ty
 
 import re
 from bs4 import BeautifulSoup
+from dpr_export.common import eviltransform
 from .base import BaseExtractor
 
 
@@ -20,7 +21,26 @@ class ClubDetailExtractor(BaseExtractor):
 
     WEEK_DAYS = ('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')
 
-    def extract_location(self, soap: BeautifulSoup) -> ty.List[str]:
+    PATTERN_CLUB_LOCATION = re.compile(r'https://www\.bing\.com/maps\?rtp=~pos.(?P<lat>\d{1,2}\.\d+)_(?P<lon>\d{1,3}\.\d+)')
+    PATTERN_CLUB_DISTRICT_AREA = re.compile(r'Club Number:[\s\n]+\d{8}, (?P<district>\d{1,3}), Area (?P<division>[A-Z])(?P<area>\d{2})')
+
+    def extract_club_district_area(self, soap: BeautifulSoup) -> ty.Optional[ty.Tuple[str, str, str]]:
+        t = soap.text.replace(self.CHR_0xa0, ' ')
+        m = self.PATTERN_CLUB_DISTRICT_AREA.search(t)
+        if not m:
+            return None
+
+        district = m.group('district')
+        division = m.group('division')
+
+        try:
+            area = m.group('area').lstrip('0')
+        except AttributeError:
+            area = ''
+
+        return district, division, area
+
+    def extract_address(self, soap: BeautifulSoup) -> ty.List[str]:
         base = soap.select('div.contact-info-body')
         base = base[0]
 
@@ -41,11 +61,25 @@ class ClubDetailExtractor(BaseExtractor):
 
         return results
 
-    def extract_club_name(self, soap: BeautifulSoup) -> str:
+    def extract_location_wgs84(self, soap: BeautifulSoup) -> ty.Optional[ty.Tuple[float, float]]:
+        m = self.PATTERN_CLUB_LOCATION.search(str(soap))
+        if not m:
+            return None
+
+        try:
+            lat = float(m.group('lat'))
+            lon = float(m.group('lon'))
+        except ValueError:
+            return None
+
+        return lat, lon
+
+    @staticmethod
+    def extract_club_name(soap: BeautifulSoup) -> str:
         base = soap.select('h1.title')
         return base[0].text.strip()
 
-    def extract_meeting_times(self, soap: BeautifulSoup) -> ty.Dict[str, ty.Any] | None:
+    def extract_meeting_times(self, soap: BeautifulSoup) -> ty.Optional[ty.Dict[str, ty.Any]]:
         base = soap.select('div.contact-info-meeting-times')
         base = base[0]
 
@@ -80,8 +114,25 @@ class ClubDetailExtractor(BaseExtractor):
         soap = BeautifulSoup(html, 'lxml')
 
         name = self.extract_club_name(soap)
-        location = self.extract_location(soap)
+        address = self.extract_address(soap)
+        location_ti = self.extract_location_wgs84(soap)
+        district, division, area = self.extract_club_district_area(soap)
+
+        if location_ti:
+            lat, lon = location_ti
+            lat_local, lon_local = eviltransform.wgs2gcj(wgsLat=lat, wgsLng=lon)
+            location_local = (lat_local, lon_local)
+        else:
+            location_local = None
+
         meeting_time = self.extract_meeting_times(soap)
 
-        result = dict(name=name, location=location, meeting_time=meeting_time)
+        result = dict(name=name,
+                      address=address,
+                      district=district,
+                      division=division,
+                      area=area,
+                      meeting_time=meeting_time,
+                      location_ti=location_ti,
+                      location_local=location_local)
         return result
