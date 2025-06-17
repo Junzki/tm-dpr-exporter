@@ -6,7 +6,7 @@ Performance data exporter for Toastmasters.
 
 ## Usage
 
-1. Prepare a PostgreSQL Server (>= 10.0)
+1. Prepare a PostgreSQL Server (>= 14.0)
 2. Create your user, role and database.
 3. Execute `etc/000-create_table.sql` to create required table.
 4. Copy `etc/config.example.yaml` to any directory, rename to `config.yaml`, change the `DATABASE_URL` to your database.
